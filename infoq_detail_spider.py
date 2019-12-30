@@ -134,13 +134,13 @@ async def branch(coros, limit=10):
     '''
     index = 0
     while True:
-        xs = stream.preserve(coros)
+        xs = stream.iterate(coros)
         ys = xs[index:index + limit]
         t = await stream.list(ys)
         if not t:
             break
         await asyncio.ensure_future(asyncio.wait(t))
-        index += limit + 1
+        index += limit
 
 
 async def run():
@@ -150,7 +150,7 @@ async def run():
     '''
     data = await MotorBase().find()
     crawler.info("Start Spider")
-    async with aiohttp.connector.TCPConnector(limit=300, force_close=True, enable_cleanup_closed=True) as tc:
+    async with aiohttp.connector.TCPConnector(limit=300, force_close=True, enable_cleanup_closed=True,verify_ssl=False) as tc:
         async with aiohttp.ClientSession(connector=tc) as session:
             coros = (asyncio.ensure_future(bound_fetch(item, session)) async for item in data)
             await branch(coros)
