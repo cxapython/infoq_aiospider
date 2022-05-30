@@ -133,14 +133,16 @@ async def branch(coros, limit=10):
     :return:
     '''
     index = 0
-    while True:
+    flag = True
+    while flag:
         xs = stream.iterate(coros)
         ys = xs[index:index + limit]
         t = await stream.list(ys)
         if not t:
-            break
-        await asyncio.ensure_future(asyncio.wait(t))
-        index += limit
+            flag = False
+        else:
+            await asyncio.ensure_future(asyncio.gather(*t))
+            index += limit
 
 
 async def run():
